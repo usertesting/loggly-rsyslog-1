@@ -11,7 +11,18 @@
 loggly_token = node['loggly']['token']
 raise "No token was found in the loggly databag." if loggly_token.nil?
 
-service "rsyslog"
+#service "rsyslog"
+
+service "rsyslog" do
+  case node["platform"]
+  when "ubuntu"
+    if node["platform_version"].to_f >= 14.04
+      provider Chef::Provider::Service::Upstart
+    end
+  end
+  action [:enable,:start]
+  supports :restart => true
+end
 
 include_recipe "loggly-rsyslog::tls" if node['loggly']['tls']['enabled']
 
@@ -26,16 +37,6 @@ template '/etc/rsyslog.conf' do
     :token => loggly_token
   })
 
-  service "rsyslog" do
-    case node["platform"]
-    when "ubuntu"
-      if node["platform_version"].to_f >= 14.04
-        provider Chef::Provider::Service::Upstart
-      end
-    end
-    action [:enable,:start]
-    supports :restart => true
-  end
 
-#  notifies :restart, "service[rsyslog]", :immediately
+  notifies :restart, "service[rsyslog]", :immediately
 end
