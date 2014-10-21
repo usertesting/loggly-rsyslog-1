@@ -8,7 +8,7 @@
 #
 
 #loggly_token = Chef::EncryptedDataBagItem.load('loggly', 'token')['token']
-loggly_token = node['loggly']['token']['value']
+loggly_token = node['loggly']['token']
 raise "No token was found in the loggly databag." if loggly_token.nil?
 
 service "rsyslog"
