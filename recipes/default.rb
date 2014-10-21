@@ -25,5 +25,12 @@ template '/etc/rsyslog.conf' do
     :tags => node['loggly']['tags'].nil? || node['loggly']['tags'].empty? ? '' : "tag=\\\"#{node['loggly']['tags'].join("\\\" tag=\\\"")}\\\"",
     :token => loggly_token
   })
+
+  service "rsyslog" do
+    provider Chef::Provider::Service::Upstart
+    supports :restart => true
+    action [:enable,:start]
+  end
+
   notifies :restart, "service[rsyslog]", :immediately
 end
