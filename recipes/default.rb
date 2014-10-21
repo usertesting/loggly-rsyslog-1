@@ -27,10 +27,15 @@ template '/etc/rsyslog.conf' do
   })
 
   service "rsyslog" do
-    provider Chef::Provider::Service::Upstart
-    supports :restart => true
+    case node["platform"]
+    when "ubuntu"
+      if node["platform_version"].to_f >= 14.04
+        provider Chef::Provider::Service::Upstart
+      end
+    end
     action [:enable,:start]
+    supports :restart => true
   end
 
-  notifies :restart, "service[rsyslog]", :immediately
+#  notifies :restart, "service[rsyslog]", :immediately
 end
