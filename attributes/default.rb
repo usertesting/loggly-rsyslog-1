@@ -1,7 +1,7 @@
 default['loggly']['tags'] = []
 
 default['loggly']['log_files'] = []
-default['loggly']['log_dirs'] = ['/var/log/apache2']
+default['loggly']['log_dirs'] = []
 
 default['loggly']['tls']['enabled'] = true
 default['loggly']['tls']['cert_path'] = '/etc/rsyslog.d/keys/ca.d'
