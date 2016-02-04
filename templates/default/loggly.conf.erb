@@ -37,7 +37,7 @@ $ModLoad imfile
 $ActionFileDefaultTemplate RSYSLOG_TraditionalFileFormat
 
 # Filter duplicated messages
-$RepeatedMsgReduction <%= node['loggly']['rsyslog']['repeat_msg'] ? 'on' : 'off' %>
+$RepeatedMsgReduction <%= node['loggly']['rsyslog']['repeat_msg'] == true ? 'on' : 'off' %>
 
 #
 # Set the default permissions for all log files.

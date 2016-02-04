@@ -13,7 +13,7 @@ default['loggly']['tls']['intermediate_cert_checksum'] = '9f4b50011bdeabda276c9d
 default['loggly']['rsyslog']['host'] = 'logs-01.loggly.com'
 default['loggly']['rsyslog']['port'] = node['loggly']['tls']['enabled'] ? 6514 : 514
 
-default['loggly']['rsyslog']['repeat_msg'] = true
+default['loggly']['rsyslog']['repeat_msg'] = false
 default['loggly']['rsyslog']['file_owner'] = 'syslog'
 default['loggly']['rsyslog']['file_group'] = 'adm'
 default['loggly']['rsyslog']['file_create_mode'] = '0640'
