@@ -62,6 +62,11 @@ $WorkDirectory <%= node['loggly']['rsyslog']['work_directory'] %>
 #
 $IncludeConfig /etc/rsyslog.d/*.conf
 
+# Log messages with the fully-qualified name / FQDN instead of the short hostname.
+# This will prevent naming clashes when searching logs, now that we have multiple data centers.
+$PreserveFQDN on
+
+
 <% if @monitor_files %>
 
   <% node['loggly']['log_files'].each do |logfile| %>
@@ -73,13 +78,15 @@ $InputRunFileMonitor
   <% end %>
 
   <% node['loggly']['log_dirs'].each do |logdir| %>
-    <% Dir.foreach(logdir['directory']) do |filename| %>
-      <% if filename =~ /[\w\.-_\d]+\.log$/ %>
+    <% if File.directory? logdir['directory'] %>
+      <% Dir.foreach(logdir['directory']) do |filename| %>
+        <% if filename =~ /[\w\.-_\d]+\.log$/ %>
 $InputFileName <%= "#{logdir['directory']}/#{filename}" %>
 $InputFileTag <%= logdir['tag'] %>:
 $InputFileStateFile state-<%= filename %>
 $InputRunFileMonitor
 
+        <% end %>
       <% end %>
     <% end %>
   <% end %>
@@ -97,4 +104,17 @@ $ActionSendStreamDriverAuthMode x509/name
 $ActionSendStreamDriverPermittedPeer *.loggly.com
 <% end %>
 
-*.* @@<%= node['loggly']['rsyslog']['host'] %>:<%= node['loggly']['rsyslog']['port'] %>;LogglyFormat
+# NOTE: If in the future, TLS is not connecting (`sudo netstat -nap | grep 6514` shows nothing or only SYN_SENT), check the install rsyslog version.
+# It turns out rsyslog 7.8.x as installed via PPA from our infrastructure repo requires the SendStreamDriver* params to be placed directly
+# in the below action block.  However, rsyslog 7.4.x as installed from default ubuntu 14.04 repos requires those directives above.
+
+*.* action(type="omfwd" protocol="tcp" target="<%= node['loggly']['rsyslog']['host'] %>" port="<%= node['loggly']['rsyslog']['port'] %>"
+    template="LogglyFormat"
+    queue.FileName="logs-01.loggly.com"
+    queue.Type="Disk"
+    queue.MaxDiskSpace="512m"
+    queue.SaveOnShutdown="on"
+    # The queue.discardserverity param is critical to ensure messages drop when queue fills (loggly outage)
+    queue.discardseverity="0"
+    action.ResumeRetryCount="-1"
+)
